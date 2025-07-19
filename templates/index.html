@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>QR Code Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #f4f6f8;
+      --text: #333;
+      --card: #f8f9fa; /* light gray for card in light mode */
+      --input: #fff;
+      --border: #ccc;
+      --nav-bg: #f8f9fa; /* light gray for navbar in light mode */
+    }
+
+    body.dark {
+      --bg: #121212;
+      --text: #e0e0e0;
+      --card: #1e1e1e;
+      --input: #2c2c2c;
+      --border: #444;
+      --nav-bg: #1a1a1a;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      margin: 0;
+      font-family: 'Segoe UI', sans-serif;
+      transition: all 0.3s ease;
+    }
+
+    .navbar {
+      background-color: var(--nav-bg);
+      color: var(--text);
+      padding: 0.75rem 2rem;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .navbar-content {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 900px;
+      margin: 0 auto;
+      height: 48px;
+    }
+
+    .navbar h2 {
+      margin: 0;
+      font-size: 1.3rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+    }
+
+    .toggle-btn {
+      background: var(--input);
+      border: 1px solid var(--border);
+      border-radius: 50%;
+      width: 32px;
+      height: 32px;
+      font-size: 1.1rem;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      color: var(--text);
+      box-shadow: 0 1px 4px rgba(0,0,0,0.04);
+      margin-left: 8px;
+      margin-top: 0 !important; /* Prevent margin-top from parent or global styles */
+    }
+
+    .toggle-btn:hover {
+      background: #e9ecef;
+      border-color: #888;
+    }
+
+    .main {
+      display: flex;
+      gap: 2rem;
+      max-width: 1200px;
+      margin: 3rem auto;
+      padding: 0 2rem;
+      flex-wrap: wrap;
+    }
+
+    .left-section {
+      flex: 3;
+      min-width: 300px;
+      background: var(--card);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0,0,0,0.05);
+    }
+
+    .right-section {
+      flex: 1;
+      min-width: 280px;
+    }
+
+    .qr-card {
+  background: var(--card);
+  border-radius: 12px;
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
+  padding: 1.5rem;
+  text-align: center;
+  height: 400px; /* 👈 fixed height */
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+}
+
+    h1 {
+      text-align: left;
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+    }
+
+    label {
+      display: block;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    select, textarea, input, button {
+      width: 100%;
+      padding: 0.75rem;
+      margin-top: 0.5rem;
+      font-size: 1rem;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      background: var(--input);
+      color: var(--text);
+    }
+
+    button {
+      background-color: #007bff;
+      color: white;
+      margin-top: 1.5rem;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .preview img {
+      width: 200px;
+      height: 200px;
+      object-fit: contain;
+      margin-top: 1rem;
+      border-radius: 8px;
+      background: white;
+      padding: 8px;
+      border: 1px solid #ddd;
+    }
+
+    #qrLabelDisplay {
+      margin-top: 0.5rem;
+      font-weight: bold;
+    }
+
+    .footer {
+      text-align: center;
+      font-size: 0.9rem;
+      color: #999;
+      margin: 2rem 0;
+    }
+
+    @media (max-width: 768px) {
+      .main {
+        flex-direction: column;
+      }
+
+      .left-section,
+      .right-section {
+        width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="navbar">
+    <div class="navbar-content">
+      <h2>QR Code Generator</h2>
+      <button class="toggle-btn" onclick="toggleTheme()" id="theme-icon" aria-label="Toggle theme">🌙</button>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- Left Section -->
+    <div class="left-section">
+      <h1>Create a QR Code</h1>
+
+      <label for="type">QR Code Type</label>
+      <select id="type">
+        <option value="text">Text</option>
+        <option value="url">URL</option>
+        <option value="email">Email</option>
+        <option value="phone">Phone</option>
+        <option value="sms">SMS</option>
+        <option value="wifi">WiFi (SSID;Password;WPA)</option>
+        <option value="vcard">vCard</option>
+        <option value="json">JSON</option>
+        <option value="xml">XML</option>
+      </select>
+
+      <label for="value">Content</label>
+      <textarea id="value" rows="4" placeholder="Enter the content..."></textarea>
+
+      <label for="qrLabel">Label (Optional)</label>
+      <input type="text" id="qrLabel" placeholder="e.g. Website QR, My Contact Info" />
+
+      <button onclick="generateQR()">Generate QR Code</button>
+    </div>
+
+    <!-- Right Section (Preview Card) -->
+    <div class="right-section">
+      <div class="qr-card">
+        <h3>Preview</h3>
+        <div class="preview">
+          <img id="qrImage" src="" alt="QR Code will appear here" />
+          <p id="qrLabelDisplay"></p>
+          <button id="downloadBtn" style="display:none;margin-top:1rem;width:100%;padding:0.75rem;">Download QR Code</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    &copy; 2025 QR Code Generator | John Kyle Lastimosa
+  </div>
+
+  <script>
+    function toggleTheme() {
+      document.body.classList.toggle('dark');
+      const icon = document.getElementById('theme-icon');
+      icon.textContent = document.body.classList.contains('dark') ? '☀️' : '🌙';
+    }
+
+    async function generateQR() {
+      const type = document.getElementById('type').value;
+      const value = document.getElementById('value').value;
+      const label = document.getElementById('qrLabel').value;
+      const labelDisplay = document.getElementById('qrLabelDisplay');
+
+      if (!value.trim()) {
+        alert("Please enter a value.");
+        return;
+      }
+
+      const res = await fetch('/api/qrcode', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json'
+        },
+        body: JSON.stringify({ type, value, label })
+      });
+
+      if (res.ok) {
+        const data = await res.json();
+        document.getElementById('qrImage').src = data.base64;
+        labelDisplay.textContent = label.trim() ? label : '';
+        const downloadBtn = document.getElementById('downloadBtn');
+        downloadBtn.style.display = 'inline-block';
+        downloadBtn.onclick = () => {
+          const a = document.createElement('a');
+          a.href = data.base64;
+          a.download = 'qr-code.png';
+          document.body.appendChild(a);
+          a.click();
+          document.body.removeChild(a);
+        };
+      } else {
+        alert("Failed to generate QR Code");
+        document.getElementById('downloadBtn').style.display = 'none';
+      }
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,22 @@
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Environment
+.env
+venv/
+env/
+
+# VSCode
+.vscode/
+
+# Mac OS
+.DS_Store
+
+# Flask-related
+instance/
+*.db
+
+# Compiled files
+*.log
